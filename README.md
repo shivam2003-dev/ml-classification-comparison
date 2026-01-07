@@ -47,27 +47,23 @@ The dataset contains chemical properties of red wine samples and their quality r
 
 | ML Model Name | Accuracy | AUC | Precision | Recall | F1 | MCC |
 | --- | --- | --- | --- | --- | --- | --- |
-| Logistic Regression | 0.0000 | 0.0000 | 0.0000 | 0.0000 | 0.0000 | 0.0000 |
-| Decision Tree | 0.0000 | 0.0000 | 0.0000 | 0.0000 | 0.0000 | 0.0000 |
-| kNN | 0.0000 | 0.0000 | 0.0000 | 0.0000 | 0.0000 | 0.0000 |
-| Naive Bayes | 0.0000 | 0.0000 | 0.0000 | 0.0000 | 0.0000 | 0.0000 |
-| Random Forest (Ensemble) | 0.0000 | 0.0000 | 0.0000 | 0.0000 | 0.0000 | 0.0000 |
-| XGBoost (Ensemble) | 0.0000 | 0.0000 | 0.0000 | 0.0000 | 0.0000 | 0.0000 |
-
-*Note: The metrics above are placeholders. After running `train_models.py`, these values will be updated with actual results.*
+| Logistic Regression | 0.5906 | 0.7555 | 0.5695 | 0.5906 | 0.5673 | 0.3250 |
+| Decision Tree | 0.6062 | 0.6974 | 0.6097 | 0.6062 | 0.6066 | 0.3944 |
+| KNN | 0.6094 | 0.7476 | 0.5841 | 0.6094 | 0.5959 | 0.3733 |
+| Naive Bayes | 0.5625 | 0.7377 | 0.5745 | 0.5625 | 0.5681 | 0.3299 |
+| Random Forest | 0.6750 | 0.8375 | 0.6504 | 0.6750 | 0.6599 | 0.4764 |
+| XGBoost | 0.6531 | 0.8153 | 0.6480 | 0.6531 | 0.6434 | 0.4453 |
 
 ### Observations about Model Performance
 
 | ML Model Name | Observation about model performance |
 | --- | --- |
-| Logistic Regression | Logistic Regression provides a linear decision boundary and works well when the relationship between features and target is approximately linear. It's fast to train and interpretable. Performance may be limited for complex non-linear relationships. |
-| Decision Tree | Decision Trees are easy to interpret and can capture non-linear relationships. However, they are prone to overfitting, especially with deep trees. They may not generalize well to unseen data. |
-| kNN | K-Nearest Neighbors is a simple, instance-based learning algorithm. It can capture local patterns but is sensitive to the choice of k and feature scaling. It can be computationally expensive for large datasets. |
-| Naive Bayes | Naive Bayes assumes feature independence, which may not hold in practice. It's fast and works well with small datasets. Performance depends on how well the independence assumption is satisfied. |
-| Random Forest (Ensemble) | Random Forest combines multiple decision trees to reduce overfitting and improve generalization. It typically performs better than a single decision tree and is robust to outliers. It can handle non-linear relationships effectively. |
-| XGBoost (Ensemble) | XGBoost is a gradient boosting algorithm that often achieves state-of-the-art performance. It's highly effective at capturing complex patterns and interactions between features. It may require more tuning but generally provides excellent results. |
-
-*Note: Detailed observations will be added after model training and evaluation.*
+| Logistic Regression | Logistic Regression achieved 59.06% accuracy with 75.55% AUC. While it provides a linear decision boundary and is fast to train, its performance is limited by the non-linear relationships in the wine quality data. The model struggles with the multi-class classification task, particularly for minority classes (quality 3, 4, 8). |
+| Decision Tree | Decision Tree achieved 60.62% accuracy with 69.74% AUC. The model can capture non-linear relationships but shows signs of overfitting. It performs better than Logistic Regression but still struggles with class imbalance, especially for rare quality levels. |
+| kNN | K-Nearest Neighbors achieved 60.94% accuracy with 74.76% AUC, performing slightly better than Decision Tree. The model benefits from feature scaling and captures local patterns effectively. However, it's computationally expensive and sensitive to the choice of k parameter. |
+| Naive Bayes | Naive Bayes achieved the lowest accuracy (56.25%) but a reasonable AUC (73.77%). The model's assumption of feature independence doesn't hold well for wine quality data, where chemical properties are correlated. Despite this, it provides a fast baseline model. |
+| Random Forest (Ensemble) | Random Forest achieved the best performance (67.50% accuracy, 83.75% AUC). By combining multiple decision trees, it effectively reduces overfitting and handles non-linear relationships. The ensemble approach provides robust predictions and better generalization compared to individual models. |
+| XGBoost (Ensemble) | XGBoost achieved the second-best performance (65.31% accuracy, 81.53% AUC). It effectively captures complex patterns and feature interactions. While slightly lower than Random Forest in this case, it shows strong performance with good generalization. The model benefits from gradient boosting's ability to correct errors iteratively. |
 
 ## Project Structure
 

@@ -64,10 +64,21 @@ if df is not None:
         # For this assignment, let's keep it as multi-class but ensure we have enough classes
         y = y.astype(int)
         
+        # Encode labels to start from 0 (required for XGBoost)
+        from sklearn.preprocessing import LabelEncoder
+        label_encoder = LabelEncoder()
+        y_encoded = label_encoder.fit_transform(y)
+        
+        # Save label encoder for inverse transform
+        joblib.dump(label_encoder, 'model/label_encoder.pkl')
+        
         # Split data
         X_train, X_test, y_train, y_test = train_test_split(
-            X, y, test_size=0.2, random_state=42, stratify=y
+            X, y_encoded, test_size=0.2, random_state=42, stratify=y_encoded
         )
+        
+        # Keep original y_test for display purposes
+        y_test_original = y_test.copy()
         
         # Scale features
         scaler = StandardScaler()
@@ -104,7 +115,7 @@ if df is not None:
                 y_pred = model.predict(X_test)
                 y_pred_proba = model.predict_proba(X_test)
             
-            # Calculate metrics
+            # Calculate metrics (using encoded labels)
             accuracy = accuracy_score(y_test, y_pred)
             
             # For multi-class, use average='weighted' or 'macro'
@@ -152,9 +163,12 @@ if df is not None:
         with open('model/metrics.json', 'w') as f:
             json.dump(all_metrics, f, indent=4)
         
-        # Save test data for Streamlit app
-        X_test.to_csv('model/test_data.csv', index=False)
-        y_test.to_csv('model/test_labels.csv', index=False)
+        # Save test data for Streamlit app (using original indices)
+        X_test_df = pd.DataFrame(X_test, columns=X.columns)
+        X_test_df.to_csv('model/test_data.csv', index=False)
+        # Save both encoded and original labels
+        pd.Series(y_test).to_csv('model/test_labels.csv', index=False)
+        pd.Series(label_encoder.inverse_transform(y_test)).to_csv('model/test_labels_original.csv', index=False)
         
         print("\n" + "="*50)
         print("All models trained and saved successfully!")
