@@ -473,12 +473,20 @@ elif page == "📈 Dataset Info":
     for path in possible_paths:
         if os.path.exists(path):
             try:
-                wine_data = pd.read_csv(path)
+                # Try with semicolon delimiter first (common in Wine Quality dataset)
+                wine_data = pd.read_csv(path, sep=';')
                 dataset_loaded = True
                 st.success(f"✅ Loaded dataset from: {path}")
                 break
             except:
-                continue
+                try:
+                    # Fallback to comma delimiter
+                    wine_data = pd.read_csv(path)
+                    dataset_loaded = True
+                    st.success(f"✅ Loaded dataset from: {path}")
+                    break
+                except:
+                    continue
     
     if dataset_loaded and wine_data is not None:
         # Dataset shape
