@@ -524,7 +524,7 @@ elif page == "📈 Dataset Info":
             st.write("**Data Types:**")
             dtype_df = pd.DataFrame({
                 'Column': wine_data.columns,
-                'Data Type': wine_data.dtypes.values,
+                'Data Type': wine_data.dtypes.astype(str).values,
                 'Non-Null Count': wine_data.count().values,
                 'Null Count': wine_data.isnull().sum().values
             })
