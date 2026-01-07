@@ -36,6 +36,9 @@ wheels/
 # *.pkl
 # *.joblib
 
+# Temporary and helper files (not needed for deployment)
+temp_files/
+
 # Jupyter Notebook
 .ipynb_checkpoints
 *.ipynb
@@ -59,4 +62,10 @@ Thumbs.db
 
 # docs
 docs/
+
+# Temporary and helper files
+temp_files/
+*.csv
+!test_data_sample.csv
+!test_data_large.csv
 
