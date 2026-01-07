@@ -29,10 +29,11 @@ wheels/
 # model/*.pkl
 # model/*.json
 # model/*.csv
-# Exclude CSV files except test datasets
+# Exclude CSV files except test datasets and wine dataset
 *.csv
 !test_data_sample.csv
 !test_data_large.csv
+!winequality-red.csv
 # *.pkl
 # *.joblib
 
