@@ -143,7 +143,7 @@ if page == "📊 Model Comparison":
             })
         
         df_comparison = pd.DataFrame(comparison_data)
-        st.dataframe(df_comparison, use_container_width=True)
+        st.dataframe(df_comparison, width='stretch')
         
         # Model selection for detailed view
         st.subheader("Select Model for Detailed Analysis")
@@ -199,7 +199,7 @@ if page == "📊 Model Comparison":
             numeric_cols = report_df.select_dtypes(include=[np.number]).columns
             for col in numeric_cols:
                 report_df[col] = report_df[col].apply(lambda x: f"{x:.4f}" if pd.notna(x) else "N/A")
-            st.dataframe(report_df, use_container_width=True)
+            st.dataframe(report_df, width='stretch')
             
             # Show summary metrics
             if 'weighted avg' in report_df.index:
@@ -236,7 +236,7 @@ elif page == "🔮 Predict on New Data":
                 
                 # Display data preview
                 st.subheader("Data Preview")
-                st.dataframe(test_data.head(10), use_container_width=True)
+                st.dataframe(test_data.head(10), width='stretch')
                 
                 # Show data info
                 with st.expander("📊 Data Information"):
@@ -254,7 +254,7 @@ elif page == "🔮 Predict on New Data":
             except Exception as e:
                 st.error(f"❌ Error reading CSV file: {str(e)}")
                 st.info("Please ensure the file is a valid CSV format.")
-                return
+                st.stop()
             
             # Model selection
             if models:
@@ -277,7 +277,7 @@ elif page == "🔮 Predict on New Data":
                         if missing_cols:
                             st.error(f"❌ Missing columns: {', '.join(missing_cols)}")
                             st.info(f"Required columns: {', '.join(expected_columns)}")
-                            return
+                            st.stop()
                         
                         # Check for extra columns (warn but continue)
                         extra_cols = set(test_data.columns) - set(expected_columns)
@@ -329,7 +329,7 @@ elif page == "🔮 Predict on New Data":
                         # Format confidence as percentage
                         results_df['Confidence'] = results_df['Confidence'].apply(lambda x: f"{x*100:.2f}%")
                         
-                        st.dataframe(results_df, use_container_width=True, hide_index=True)
+                        st.dataframe(results_df, width='stretch', hide_index=True)
                         
                         # Show prediction statistics
                         col1, col2, col3 = st.columns(3)
@@ -433,7 +433,7 @@ elif page == "📈 Dataset Info":
         if os.path.exists('model/test_data.csv'):
             test_data = pd.read_csv('model/test_data.csv')
             st.subheader("Feature Statistics")
-            st.dataframe(test_data.describe(), use_container_width=True)
+            st.dataframe(test_data.describe(), width='stretch')
     except:
         pass
 

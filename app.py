@@ -254,7 +254,7 @@ elif page == "🔮 Predict on New Data":
             except Exception as e:
                 st.error(f"❌ Error reading CSV file: {str(e)}")
                 st.info("Please ensure the file is a valid CSV format.")
-                return
+                st.stop()
             
             # Model selection
             if models:
@@ -277,7 +277,7 @@ elif page == "🔮 Predict on New Data":
                         if missing_cols:
                             st.error(f"❌ Missing columns: {', '.join(missing_cols)}")
                             st.info(f"Required columns: {', '.join(expected_columns)}")
-                            return
+                            st.stop()
                         
                         # Check for extra columns (warn but continue)
                         extra_cols = set(test_data.columns) - set(expected_columns)
