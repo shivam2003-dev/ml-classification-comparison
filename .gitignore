@@ -29,7 +29,10 @@ wheels/
 # model/*.pkl
 # model/*.json
 # model/*.csv
+# Exclude CSV files except test datasets
 *.csv
+!test_data_sample.csv
+!test_data_large.csv
 # *.pkl
 # *.joblib
 
