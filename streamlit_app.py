@@ -68,33 +68,64 @@ def load_models():
     }
     
     scaler = None
-    if os.path.exists('model/scaler.pkl'):
-        scaler = joblib.load('model/scaler.pkl')
+    scaler_path = 'model/scaler.pkl'
+    if os.path.exists(scaler_path):
+        try:
+            scaler = joblib.load(scaler_path)
+        except Exception as e:
+            st.warning(f"Could not load scaler: {str(e)}")
     
     for model_name, filepath in model_files.items():
         if os.path.exists(filepath):
-            models[model_name] = joblib.load(filepath)
+            try:
+                models[model_name] = joblib.load(filepath)
+            except Exception as e:
+                st.warning(f"Could not load {model_name}: {str(e)}")
     
     return models, scaler
 
 @st.cache_data
 def load_metrics():
     """Load saved metrics"""
-    if os.path.exists('model/metrics.json'):
-        import json
-        with open('model/metrics.json', 'r') as f:
-            return json.load(f)
+    metrics_path = 'model/metrics.json'
+    if os.path.exists(metrics_path):
+        try:
+            import json
+            with open(metrics_path, 'r') as f:
+                return json.load(f)
+        except Exception as e:
+            st.warning(f"Could not load metrics: {str(e)}")
+            return None
     return None
 
 # Load data
-models, scaler = load_models()
-metrics = load_metrics()
+try:
+    models, scaler = load_models()
+    metrics = load_metrics()
+except Exception as e:
+    st.error(f"Error loading models/metrics: {str(e)}")
+    models, scaler = {}, None
+    metrics = None
 
 # Page 1: Model Comparison
 if page == "📊 Model Comparison":
     st.header("Model Performance Comparison")
     
-    if metrics:
+    # Check if models/metrics exist
+    if not metrics and not models:
+        st.error("""
+        ⚠️ **Models and metrics not found!**
+        
+        Please ensure you have:
+        1. Trained the models by running: `python train_models.py`
+        2. The `model/` directory contains:
+           - `metrics.json`
+           - `*.pkl` files for all 6 models
+           - `scaler.pkl`
+        
+        If you're running this on Streamlit Cloud, make sure the model files are committed to GitHub.
+        """)
+    elif metrics:
         # Display metrics table
         st.subheader("Evaluation Metrics Table")
         

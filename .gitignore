@@ -24,12 +24,14 @@ wheels/
 *.egg
 
 # Models and data
-model/*.pkl
-model/*.json
-model/*.csv
+# Note: Model files are needed for Streamlit Cloud deployment
+# Uncomment the lines below if you want to exclude models from git
+# model/*.pkl
+# model/*.json
+# model/*.csv
 *.csv
-*.pkl
-*.joblib
+# *.pkl
+# *.joblib
 
 # Jupyter Notebook
 .ipynb_checkpoints
@@ -51,4 +53,7 @@ Thumbs.db
 
 # Logs
 *.log
+
+# docs
+docs/
 
