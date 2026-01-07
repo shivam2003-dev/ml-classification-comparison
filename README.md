@@ -151,16 +151,38 @@ ml-classification-comparison/
 
 ### Streamlit Community Cloud
 
-1. Push your code to GitHub
-2. Go to [Streamlit Community Cloud](https://streamlit.io/cloud)
-3. Sign in with your GitHub account
-4. Click "New App"
-5. Select your repository
-6. Choose branch (usually `main`)
-7. Select `streamlit_app.py` as the main file
-8. Click "Deploy"
+**Quick Deployment Steps:**
 
-The app will be live in a few minutes!
+1. **Push your code to GitHub** (already done ✅)
+   ```bash
+   git push origin main
+   ```
+
+2. **Go to Streamlit Cloud**
+   - Visit: https://streamlit.io/cloud
+   - Sign in with your GitHub account
+
+3. **Create New App**
+   - Click "New App" button
+   - Select repository: `shivam2003-dev/ml-classification-comparison`
+   - Choose branch: `main`
+   - Main file path: `app.py`
+   - Click "Deploy"
+
+4. **Wait for Deployment**
+   - Deployment takes 2-5 minutes
+   - Monitor the deployment logs
+   - Your app will be live at: `https://ml-classification-comparison.streamlit.app`
+
+**📖 Detailed Guide:** See [STREAMLIT_DEPLOYMENT.md](STREAMLIT_DEPLOYMENT.md) for complete step-by-step instructions and troubleshooting.
+
+**✅ Deployment Checklist:** See [DEPLOYMENT_CHECKLIST.md](DEPLOYMENT_CHECKLIST.md) to ensure everything is ready.
+
+### Automatic Updates
+
+- Streamlit Cloud automatically redeploys when you push to the `main` branch
+- Just push your changes: `git push origin main`
+- Wait 2-5 minutes for automatic redeployment
 
 ## Evaluation Metrics
 
