@@ -167,12 +167,27 @@ if page == "📊 Model Comparison":
         with col2:
             st.markdown("### 📈 Confusion Matrix")
             cm = np.array(selected_metrics['confusion_matrix'])
-            fig, ax = plt.subplots(figsize=(8, 6))
-            sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', ax=ax)
-            ax.set_xlabel('Predicted')
-            ax.set_ylabel('Actual')
-            ax.set_title(f'Confusion Matrix - {selected_model}')
+            fig, ax = plt.subplots(figsize=(10, 8))
+            
+            # Create heatmap with better formatting
+            sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', ax=ax, 
+                       cbar_kws={'label': 'Count'}, linewidths=0.5)
+            ax.set_xlabel('Predicted Quality', fontsize=12, fontweight='bold')
+            ax.set_ylabel('Actual Quality', fontsize=12, fontweight='bold')
+            ax.set_title(f'Confusion Matrix - {selected_model}', fontsize=14, fontweight='bold')
+            
+            # Set class labels if available
+            if cm.shape[0] <= 10:  # Only if reasonable number of classes
+                class_labels = [f'Q{i}' for i in range(cm.shape[0])]
+                ax.set_xticklabels(class_labels, rotation=0)
+                ax.set_yticklabels(class_labels, rotation=0)
+            
+            plt.tight_layout()
             st.pyplot(fig)
+            
+            # Calculate and display accuracy from confusion matrix
+            cm_accuracy = np.trace(cm) / np.sum(cm)
+            st.caption(f"Accuracy from Confusion Matrix: {cm_accuracy:.4f}")
         
         # Classification Report
         st.markdown("### 📋 Classification Report")
@@ -180,7 +195,23 @@ if page == "📊 Model Comparison":
         if isinstance(report, dict):
             # Convert to DataFrame for better display
             report_df = pd.DataFrame(report).transpose()
+            # Format numeric columns
+            numeric_cols = report_df.select_dtypes(include=[np.number]).columns
+            for col in numeric_cols:
+                report_df[col] = report_df[col].apply(lambda x: f"{x:.4f}" if pd.notna(x) else "N/A")
             st.dataframe(report_df, use_container_width=True)
+            
+            # Show summary metrics
+            if 'weighted avg' in report_df.index:
+                st.markdown("**Weighted Average Metrics:**")
+                weighted_avg = report_df.loc['weighted avg']
+                col1, col2, col3 = st.columns(3)
+                with col1:
+                    st.metric("Precision (Weighted)", weighted_avg.get('precision', 'N/A'))
+                with col2:
+                    st.metric("Recall (Weighted)", weighted_avg.get('recall', 'N/A'))
+                with col3:
+                    st.metric("F1-Score (Weighted)", weighted_avg.get('f1-score', 'N/A'))
     else:
         st.warning("⚠️ No metrics found. Please train the models first using train_models.py")
 
@@ -199,12 +230,31 @@ elif page == "🔮 Predict on New Data":
     if uploaded_file is not None:
         try:
             # Read uploaded data
-            test_data = pd.read_csv(uploaded_file)
-            st.success(f"✅ Successfully loaded {len(test_data)} rows")
-            
-            # Display data preview
-            st.subheader("Data Preview")
-            st.dataframe(test_data.head(), use_container_width=True)
+            try:
+                test_data = pd.read_csv(uploaded_file)
+                st.success(f"✅ Successfully loaded {len(test_data)} rows, {len(test_data.columns)} columns")
+                
+                # Display data preview
+                st.subheader("Data Preview")
+                st.dataframe(test_data.head(10), use_container_width=True)
+                
+                # Show data info
+                with st.expander("📊 Data Information"):
+                    col1, col2 = st.columns(2)
+                    with col1:
+                        st.write("**Shape:**", test_data.shape)
+                        st.write("**Columns:**", list(test_data.columns))
+                    with col2:
+                        st.write("**Data Types:**")
+                        st.write(test_data.dtypes)
+                        if test_data.isnull().any().any():
+                            st.warning("⚠️ Missing values detected")
+                            st.write("Missing values per column:")
+                            st.write(test_data.isnull().sum())
+            except Exception as e:
+                st.error(f"❌ Error reading CSV file: {str(e)}")
+                st.info("Please ensure the file is a valid CSV format.")
+                return
             
             # Model selection
             if models:
@@ -218,25 +268,78 @@ elif page == "🔮 Predict on New Data":
                     try:
                         model = models[selected_model]
                         
+                        # Validate data columns
+                        expected_columns = ['fixed acidity', 'volatile acidity', 'citric acid', 
+                                         'residual sugar', 'chlorides', 'free sulfur dioxide',
+                                         'total sulfur dioxide', 'density', 'pH', 'sulphates', 'alcohol']
+                        
+                        missing_cols = set(expected_columns) - set(test_data.columns)
+                        if missing_cols:
+                            st.error(f"❌ Missing columns: {', '.join(missing_cols)}")
+                            st.info(f"Required columns: {', '.join(expected_columns)}")
+                            return
+                        
+                        # Check for extra columns (warn but continue)
+                        extra_cols = set(test_data.columns) - set(expected_columns)
+                        if extra_cols:
+                            st.warning(f"⚠️ Extra columns detected (will be ignored): {', '.join(extra_cols)}")
+                        
+                        # Select only required columns in correct order
+                        test_data_clean = test_data[expected_columns].copy()
+                        
+                        # Check for missing values
+                        if test_data_clean.isnull().any().any():
+                            st.warning("⚠️ Missing values detected. Filling with column means.")
+                            test_data_clean = test_data_clean.fillna(test_data_clean.mean())
+                        
                         # Check if model needs scaled data
                         needs_scaling = selected_model in ['Logistic Regression', 'KNN', 'Naive Bayes']
                         
                         if needs_scaling and scaler:
-                            X_test = scaler.transform(test_data)
+                            X_test = scaler.transform(test_data_clean)
                         else:
-                            X_test = test_data.values
+                            X_test = test_data_clean.values
                         
                         # Make predictions
-                        predictions = model.predict(X_test)
-                        prediction_proba = model.predict_proba(X_test)
+                        with st.spinner('Making predictions...'):
+                            predictions = model.predict(X_test)
+                            prediction_proba = model.predict_proba(X_test)
+                        
+                        # Load label encoder if exists to convert predictions back to original labels
+                        label_encoder = None
+                        if os.path.exists('model/label_encoder.pkl'):
+                            try:
+                                label_encoder = joblib.load('model/label_encoder.pkl')
+                                predictions_original = label_encoder.inverse_transform(predictions)
+                            except:
+                                predictions_original = predictions
+                        else:
+                            predictions_original = predictions
                         
                         # Display results
                         st.subheader("Predictions")
+                        st.success(f"✅ Successfully predicted {len(predictions)} samples")
+                        
                         results_df = pd.DataFrame({
-                            'Prediction': predictions,
+                            'Sample': range(1, len(predictions) + 1),
+                            'Predicted Quality': predictions_original,
                             'Confidence': np.max(prediction_proba, axis=1)
                         })
-                        st.dataframe(results_df, use_container_width=True)
+                        
+                        # Format confidence as percentage
+                        results_df['Confidence'] = results_df['Confidence'].apply(lambda x: f"{x*100:.2f}%")
+                        
+                        st.dataframe(results_df, use_container_width=True, hide_index=True)
+                        
+                        # Show prediction statistics
+                        col1, col2, col3 = st.columns(3)
+                        with col1:
+                            st.metric("Total Predictions", len(predictions))
+                        with col2:
+                            st.metric("Most Common Quality", int(pd.Series(predictions_original).mode()[0]))
+                        with col3:
+                            avg_confidence = np.max(prediction_proba, axis=1).mean()
+                            st.metric("Avg Confidence", f"{avg_confidence*100:.2f}%")
                         
                         # Download predictions
                         csv = results_df.to_csv(index=False)
@@ -249,6 +352,9 @@ elif page == "🔮 Predict on New Data":
                         
                     except Exception as e:
                         st.error(f"❌ Error making predictions: {str(e)}")
+                        import traceback
+                        with st.expander("Show error details"):
+                            st.code(traceback.format_exc())
             else:
                 st.warning("⚠️ No models found. Please train the models first.")
         except Exception as e:

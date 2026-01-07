@@ -49,10 +49,10 @@ The dataset contains chemical properties of red wine samples and their quality r
 | --- | --- | --- | --- | --- | --- | --- |
 | Logistic Regression | 0.5906 | 0.7555 | 0.5695 | 0.5906 | 0.5673 | 0.3250 |
 | Decision Tree | 0.6062 | 0.6974 | 0.6097 | 0.6062 | 0.6066 | 0.3944 |
-| KNN | 0.6094 | 0.7476 | 0.5841 | 0.6094 | 0.5959 | 0.3733 |
+| kNN | 0.6094 | 0.7476 | 0.5841 | 0.6094 | 0.5959 | 0.3733 |
 | Naive Bayes | 0.5625 | 0.7377 | 0.5745 | 0.5625 | 0.5681 | 0.3299 |
-| Random Forest | 0.6750 | 0.8375 | 0.6504 | 0.6750 | 0.6599 | 0.4764 |
-| XGBoost | 0.6531 | 0.8153 | 0.6480 | 0.6531 | 0.6434 | 0.4453 |
+| Random Forest (Ensemble) | 0.6750 | 0.8375 | 0.6504 | 0.6750 | 0.6599 | 0.4764 |
+| XGBoost (Ensemble) | 0.6531 | 0.8153 | 0.6480 | 0.6531 | 0.6434 | 0.4453 |
 
 ### Observations about Model Performance
 
