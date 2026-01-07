@@ -143,7 +143,7 @@ if page == "📊 Model Comparison":
             })
         
         df_comparison = pd.DataFrame(comparison_data)
-        st.dataframe(df_comparison, use_container_width=True)
+        st.dataframe(df_comparison, width='stretch')
         
         # Model selection for detailed view
         st.subheader("Select Model for Detailed Analysis")
@@ -199,7 +199,7 @@ if page == "📊 Model Comparison":
             numeric_cols = report_df.select_dtypes(include=[np.number]).columns
             for col in numeric_cols:
                 report_df[col] = report_df[col].apply(lambda x: f"{x:.4f}" if pd.notna(x) else "N/A")
-            st.dataframe(report_df, use_container_width=True)
+            st.dataframe(report_df, width='stretch')
             
             # Show summary metrics
             if 'weighted avg' in report_df.index:
@@ -236,7 +236,7 @@ elif page == "🔮 Predict on New Data":
                 
                 # Display data preview
                 st.subheader("Data Preview")
-                st.dataframe(test_data.head(10), use_container_width=True)
+                st.dataframe(test_data.head(10), width='stretch')
                 
                 # Show data info
                 with st.expander("📊 Data Information"):
@@ -329,7 +329,7 @@ elif page == "🔮 Predict on New Data":
                         # Format confidence as percentage
                         results_df['Confidence'] = results_df['Confidence'].apply(lambda x: f"{x*100:.2f}%")
                         
-                        st.dataframe(results_df, use_container_width=True, hide_index=True)
+                        st.dataframe(results_df, width='stretch', hide_index=True)
                         
                         # Show prediction statistics
                         col1, col2, col3 = st.columns(3)
@@ -381,61 +381,280 @@ elif page == "🔮 Predict on New Data":
 elif page == "📈 Dataset Info":
     st.header("Dataset Information")
     
-    st.markdown("""
-    ### Wine Quality Dataset
+    # Dataset Overview
+    col1, col2 = st.columns([2, 1])
     
-    **Source:** UCI Machine Learning Repository
+    with col1:
+        st.markdown("""
+        ### Wine Quality Dataset
+        
+        **Source:** [UCI Machine Learning Repository](https://archive.ics.uci.edu/ml/datasets/wine+quality)
+        
+        **Description:**
+        This dataset contains chemical properties of red wine samples and their quality ratings.
+        The quality is rated on a scale from 3 to 8 based on sensory data.
+        
+        **Citation:**
+        P. Cortez, A. Cerdeira, F. Almeida, T. Matos and J. Reis.
+        Modeling wine preferences by data mining from physicochemical properties.
+        In Decision Support Systems, Elsevier, 47(4):547-553, 2009.
+        """)
     
-    **Description:**
-    This dataset contains chemical properties of red wine samples and their quality ratings.
-    The quality is rated on a scale from 3 to 8.
+    with col2:
+        st.info("""
+        **Quick Stats:**
+        - 📊 Instances: 1,599
+        - 🔢 Features: 11
+        - 🎯 Classes: 6
+        - 📈 Type: Classification
+        """)
     
-    **Features (11 input features):**
-    1. Fixed Acidity
-    2. Volatile Acidity
-    3. Citric Acid
-    4. Residual Sugar
-    5. Chlorides
-    6. Free Sulfur Dioxide
-    7. Total Sulfur Dioxide
-    8. Density
-    9. pH
-    10. Sulphates
-    11. Alcohol
+    # Feature Information
+    st.subheader("🔍 Feature Information")
     
-    **Target:**
-    - Quality (3-8 scale)
+    features_df = pd.DataFrame({
+        'Feature': [
+            'Fixed Acidity',
+            'Volatile Acidity',
+            'Citric Acid',
+            'Residual Sugar',
+            'Chlorides',
+            'Free Sulfur Dioxide',
+            'Total Sulfur Dioxide',
+            'Density',
+            'pH',
+            'Sulphates',
+            'Alcohol'
+        ],
+        'Unit': [
+            'g/dm³',
+            'g/dm³',
+            'g/dm³',
+            'g/dm³',
+            'g/dm³',
+            'mg/dm³',
+            'mg/dm³',
+            'g/cm³',
+            'scale',
+            'g/dm³',
+            '% vol'
+        ],
+        'Description': [
+            'Non-volatile acids',
+            'Acetic acid amount',
+            'Adds freshness',
+            'Sugar remaining after fermentation',
+            'Salt content',
+            'Prevents microbial growth',
+            'Free + bound forms',
+            'Density of wine',
+            'Acidity/alkalinity level',
+            'Wine additive (potassium sulphate)',
+            'Alcohol percentage'
+        ]
+    })
     
-    **Dataset Statistics:**
-    - Total Instances: 1,599
-    - Features: 11
-    - Classes: 6 (quality levels 3-8)
+    st.dataframe(features_df, width='stretch', hide_index=True)
     
-    **Models Implemented:**
-    1. Logistic Regression
-    2. Decision Tree Classifier
-    3. K-Nearest Neighbor (KNN)
-    4. Naive Bayes (Gaussian)
-    5. Random Forest (Ensemble)
-    6. XGBoost (Ensemble)
+    # Dataset Exploration
+    st.subheader("📊 Dataset Exploration")
     
-    **Evaluation Metrics:**
-    - Accuracy
-    - AUC Score
-    - Precision
-    - Recall
-    - F1 Score
-    - Matthews Correlation Coefficient (MCC)
-    """)
+    # Try to load the actual dataset
+    dataset_loaded = False
+    wine_data = None
     
-    # Try to load and display dataset statistics
-    try:
-        if os.path.exists('model/test_data.csv'):
-            test_data = pd.read_csv('model/test_data.csv')
-            st.subheader("Feature Statistics")
-            st.dataframe(test_data.describe(), use_container_width=True)
-    except:
-        pass
+    # Try multiple possible locations
+    possible_paths = [
+        'winequality-red.csv',
+        'temp_files/winequality-red.csv',
+        'model/test_data.csv'
+    ]
+    
+    for path in possible_paths:
+        if os.path.exists(path):
+            try:
+                # Try with semicolon delimiter first (common in Wine Quality dataset)
+                wine_data = pd.read_csv(path, sep=';')
+                dataset_loaded = True
+                st.success(f"✅ Loaded dataset from: {path}")
+                break
+            except:
+                try:
+                    # Fallback to comma delimiter
+                    wine_data = pd.read_csv(path)
+                    dataset_loaded = True
+                    st.success(f"✅ Loaded dataset from: {path}")
+                    break
+                except:
+                    continue
+    
+    if dataset_loaded and wine_data is not None:
+        # Dataset shape
+        col1, col2, col3, col4 = st.columns(4)
+        with col1:
+            st.metric("Total Rows", wine_data.shape[0])
+        with col2:
+            st.metric("Total Columns", wine_data.shape[1])
+        with col3:
+            st.metric("Memory Usage", f"{wine_data.memory_usage(deep=True).sum() / 1024:.2f} KB")
+        with col4:
+            st.metric("Missing Values", wine_data.isnull().sum().sum())
+        
+        # Data Preview Tabs
+        tab1, tab2, tab3, tab4, tab5 = st.tabs([
+            "📋 First Rows", 
+            "📋 Last Rows", 
+            "📊 Statistics", 
+            "📈 Distribution",
+            "🔗 Correlations"
+        ])
+        
+        with tab1:
+            st.write("**First 10 rows of the dataset:**")
+            st.dataframe(wine_data.head(10), width='stretch')
+        
+        with tab2:
+            st.write("**Last 10 rows of the dataset:**")
+            st.dataframe(wine_data.tail(10), width='stretch')
+        
+        with tab3:
+            st.write("**Statistical Summary:**")
+            st.dataframe(wine_data.describe(), width='stretch')
+            
+            st.write("**Data Types:**")
+            dtype_df = pd.DataFrame({
+                'Column': wine_data.columns,
+                'Data Type': wine_data.dtypes.values,
+                'Non-Null Count': wine_data.count().values,
+                'Null Count': wine_data.isnull().sum().values
+            })
+            st.dataframe(dtype_df, width='stretch', hide_index=True)
+        
+        with tab4:
+            st.write("**Target Variable Distribution:**")
+            if 'quality' in wine_data.columns:
+                quality_counts = wine_data['quality'].value_counts().sort_index()
+                
+                fig, ax = plt.subplots(figsize=(10, 5))
+                quality_counts.plot(kind='bar', ax=ax, color='steelblue')
+                ax.set_xlabel('Quality Rating')
+                ax.set_ylabel('Count')
+                ax.set_title('Distribution of Wine Quality Ratings')
+                ax.grid(axis='y', alpha=0.3)
+                st.pyplot(fig)
+                plt.close()
+                
+                col1, col2 = st.columns(2)
+                with col1:
+                    st.write("**Quality Distribution:**")
+                    st.dataframe(
+                        pd.DataFrame({
+                            'Quality': quality_counts.index,
+                            'Count': quality_counts.values,
+                            'Percentage': (quality_counts.values / len(wine_data) * 100).round(2)
+                        }),
+                        width='stretch',
+                        hide_index=True
+                    )
+                with col2:
+                    st.metric("Most Common Quality", quality_counts.idxmax())
+                    st.metric("Average Quality", f"{wine_data['quality'].mean():.2f}")
+                    st.metric("Quality Std Dev", f"{wine_data['quality'].std():.2f}")
+        
+        with tab5:
+            st.write("**Feature Correlation Matrix:**")
+            
+            # Calculate correlation matrix
+            corr_matrix = wine_data.corr()
+            
+            # Create heatmap
+            fig, ax = plt.subplots(figsize=(12, 10))
+            sns.heatmap(corr_matrix, annot=True, fmt='.2f', cmap='coolwarm', 
+                       center=0, square=True, ax=ax, cbar_kws={'shrink': 0.8})
+            ax.set_title('Feature Correlation Heatmap')
+            plt.tight_layout()
+            st.pyplot(fig)
+            plt.close()
+            
+            if 'quality' in wine_data.columns:
+                st.write("**Correlation with Quality (Target):**")
+                quality_corr = corr_matrix['quality'].drop('quality').sort_values(ascending=False)
+                corr_df = pd.DataFrame({
+                    'Feature': quality_corr.index,
+                    'Correlation': quality_corr.values
+                })
+                st.dataframe(corr_df, width='stretch', hide_index=True)
+    else:
+        st.warning("⚠️ Dataset file not found. Please ensure 'winequality-red.csv' is in the project directory.")
+        st.info("""
+        You can download the dataset from:
+        - [UCI Machine Learning Repository](https://archive.ics.uci.edu/ml/datasets/wine+quality)
+        - [Kaggle - Red Wine Quality](https://www.kaggle.com/datasets/uciml/red-wine-quality-cortez-et-al-2009)
+        """)
+    
+    # Models Information
+    st.subheader("🤖 Implemented Models")
+    
+    models_info = pd.DataFrame({
+        'Model': [
+            'Logistic Regression',
+            'Decision Tree',
+            'K-Nearest Neighbors (KNN)',
+            'Naive Bayes (Gaussian)',
+            'Random Forest',
+            'XGBoost'
+        ],
+        'Type': [
+            'Linear',
+            'Tree-based',
+            'Instance-based',
+            'Probabilistic',
+            'Ensemble',
+            'Ensemble (Boosting)'
+        ],
+        'Key Characteristics': [
+            'Fast, interpretable, works well with linear relationships',
+            'Non-linear, interpretable, prone to overfitting',
+            'Non-parametric, sensitive to feature scaling',
+            'Fast, works well with independent features',
+            'Reduces overfitting, handles non-linear relationships',
+            'High performance, handles complex patterns'
+        ]
+    })
+    
+    st.dataframe(models_info, width='stretch', hide_index=True)
+    
+    # Evaluation Metrics
+    st.subheader("📏 Evaluation Metrics")
+    
+    metrics_info = pd.DataFrame({
+        'Metric': [
+            'Accuracy',
+            'AUC Score',
+            'Precision',
+            'Recall',
+            'F1 Score',
+            'MCC'
+        ],
+        'Description': [
+            'Overall correctness of predictions',
+            'Area under ROC curve - model discrimination ability',
+            'Accuracy of positive predictions',
+            'Coverage of actual positive cases',
+            'Harmonic mean of precision and recall',
+            'Matthews Correlation Coefficient - balanced measure'
+        ],
+        'Range': [
+            '0 to 1 (higher is better)',
+            '0 to 1 (higher is better)',
+            '0 to 1 (higher is better)',
+            '0 to 1 (higher is better)',
+            '0 to 1 (higher is better)',
+            '-1 to 1 (higher is better)'
+        ]
+    })
+    
+    st.dataframe(metrics_info, width='stretch', hide_index=True)
 
 # Footer
 st.markdown("---")
