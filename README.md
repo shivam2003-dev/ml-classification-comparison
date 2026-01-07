@@ -204,7 +204,8 @@ All models are evaluated using the following metrics:
 
 ## Author
 
-[Your Name]
+Shivam Kumar
+
 
 ## License
 
